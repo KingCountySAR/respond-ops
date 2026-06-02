@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { ApiResponse } from '@shared';
+import type { ApiResponse } from '@shared/api';
 
 export default function App() {
   const [status, setStatus] = useState<string>('...');
