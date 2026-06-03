@@ -1,4 +1,4 @@
-import { type ApiResponse, type ClientLogin } from './';
+import { type ApiResponse, type ClientLogin } from './'
 
 export interface ClientEnvironment {
   readonly orgId: string;

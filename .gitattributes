@@ -1,3 +1,2 @@
-# Windows users: please set autocrlf to *false* for this repository for correct behavior. Do not set it here.
-#
-# From the command line inside this repo run: git config core.autocrlf false
+* text=auto eol=lf
+*.{cmd,bat} text eol=crlf

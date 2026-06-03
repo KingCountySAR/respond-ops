@@ -1,6 +1,6 @@
-import type { MemberInfo } from '@shared/api/index.js';
-import type { ParticipantInfo } from '@shared/api/participant.js';
-import { MemberProviderType } from '@server/db/memberProviderDoc.js';
+import { MemberProviderType } from '@server/db/memberProviderDoc.js'
+import type { MemberInfo } from '@shared/api/index.js'
+import type { ParticipantInfo } from '@shared/api/participant.js'
 
 export interface MemberAuthInfo {
   provider: string;
@@ -17,15 +17,15 @@ export interface MemberProvider {
 }
 
 export class MemberProviderRegistry {
-  private lookup: { [key: string]: MemberProvider } = {};
+  private lookup: { [key: string]: MemberProvider } = {}
 
   register(key: MemberProviderType, provider: MemberProvider) {
-    this.lookup[key] = provider;
+    this.lookup[key] = provider
   }
 
   get(key: string) {
-    return this.lookup[key];
+    return this.lookup[key]
   }
 }
 
-export const defaultMembersRepositoryRegistry = new MemberProviderRegistry();
+export const defaultMembersRepositoryRegistry = new MemberProviderRegistry()

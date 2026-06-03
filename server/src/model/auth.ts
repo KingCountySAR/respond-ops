@@ -1,4 +1,4 @@
-import { ClientLogin } from '@shared';
+import { ClientLogin } from '@shared'
 
 export interface SessionLogin extends ClientLogin {
   id: string;

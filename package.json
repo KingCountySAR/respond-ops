@@ -10,10 +10,17 @@
     "start": "npm run start -w server",
     "dev": "concurrently -n server,web -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w web\"",
     "build": "npm run build -w web && npm run build -w server",
+    "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "concurrently": "^9.1.2",
-    "typescript": "^5.7.3"
+    "eslint": "^9.39.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-simple-import-sort": "^13.0.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.60.1"
   }
 }

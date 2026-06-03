@@ -1,4 +1,4 @@
-import { ApiResponse } from './';
+import { ApiResponse } from './'
 
 export interface Organization {
   id: string,

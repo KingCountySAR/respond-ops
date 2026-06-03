@@ -1,16 +1,16 @@
-import { ClientEnvironment } from '@shared/api/environment.js';
-import { Organization } from '@shared/api/organization.js';
-import { getDb } from '@server/db/index.js';
-import { isD4HProviderDoc, MEMBER_PROVIDER_COLLECTION, MemberProviderDoc } from '@server/db/memberProviderDoc.js';
-import { OrganizationDoc, ORGS_COLLECTION } from '@server/db/organizationDoc.js';
-import { WithId } from 'mongodb';
+import { getDb } from '@server/db/index.js'
+import { isD4HProviderDoc, MEMBER_PROVIDER_COLLECTION, MemberProviderDoc } from '@server/db/memberProviderDoc.js'
+import { OrganizationDoc, ORGS_COLLECTION } from '@server/db/organizationDoc.js'
+import { ClientEnvironment } from '@shared/api/environment.js'
+import { Organization } from '@shared/api/organization.js'
+import { WithId } from 'mongodb'
 
-import D4HMembersProvider from './member-providers/d4hMembersProvider.js';
-import { MemberProvider } from './member-providers/memberProvider.js';
+import D4HMembersProvider from './member-providers/d4hMembersProvider.js'
+import { MemberProvider } from './member-providers/memberProvider.js'
 
 export class OrganizationService {
-  private docs: WithId<OrganizationDoc>[] = [];
-  private memberProviders: Record<string, MemberProvider> = {};
+  private docs: WithId<OrganizationDoc>[] = []
+  private memberProviders: Record<string, MemberProvider> = {}
 
   constructor() {
 
@@ -18,62 +18,62 @@ export class OrganizationService {
 
   async reload(force?: boolean) {
     if (this.docs.length === 0 || force) {
-      const providerDocs = await getDb().collection<MemberProviderDoc>(MEMBER_PROVIDER_COLLECTION).find().toArray();
+      const providerDocs = await getDb().collection<MemberProviderDoc>(MEMBER_PROVIDER_COLLECTION).find().toArray()
       this.memberProviders = providerDocs.reduce((lookup, doc) => {
         if (isD4HProviderDoc(doc)) {
-          lookup[doc.name] = new D4HMembersProvider(doc);
+          lookup[doc.name] = new D4HMembersProvider(doc)
         } else {
-          console.error(`Unknown member provider type for ${doc.name}: ${doc.provider}`);
+          console.error(`Unknown member provider type for ${doc.name}: ${doc.provider}`)
         }
-        return lookup;
-      }, {} as Record<string, MemberProvider>);
-      this.docs = await getDb().collection<OrganizationDoc>(ORGS_COLLECTION).find().toArray();
+        return lookup
+      }, {} as Record<string, MemberProvider>)
+      this.docs = await getDb().collection<OrganizationDoc>(ORGS_COLLECTION).find().toArray()
     }
   }
 
   async getOrgForDomain(domain: string): Promise<OrganizationDoc> {
-    await this.reload();
-    const doc = this.docs.find((f) => f.domain?.toLowerCase() === domain.toLowerCase());
+    await this.reload()
+    const doc = this.docs.find((f) => f.domain?.toLowerCase() === domain.toLowerCase())
     if (!doc) {
-      throw new Error('Not configured for domain ' + domain);
+      throw new Error('Not configured for domain ' + domain)
     }
-    return doc;
+    return doc
   }
 
   async getEnvironmentForDomain(domain: string): Promise<ClientEnvironment> {
-    const org = await this.getOrgForDomain(domain);
+    const org = await this.getOrgForDomain(domain)
 
     const result: ClientEnvironment = {
       orgId: org.id,
       title: org.title ?? 'Team',
       shortTitle: org?.rosterName ?? org?.title ?? 'Team',
       brand: { ...org.brand },
-    };
-    return result;
+    }
+    return result
   }
 
   async getMemberProviderForOrganization(organization: OrganizationDoc): Promise<MemberProvider> {
-    const provider = this.memberProviders[organization.memberProvider];
+    const provider = this.memberProviders[organization.memberProvider]
     if (!provider) {
-      throw new Error('No member provider found for organization: ' + organization.id);
+      throw new Error('No member provider found for organization: ' + organization.id)
     }
-    return provider;
+    return provider
   }
 
   async getUsersOrgView(orgId: string) {
-    await this.reload();
-    const orgs: Record<string, Organization> = {};
-    this.walkOrgForUser(orgId, orgs);
-    console.log('view', Object.values(orgs));
-    return Object.values(orgs);
+    await this.reload()
+    const orgs: Record<string, Organization> = {}
+    this.walkOrgForUser(orgId, orgs)
+    console.log('view', Object.values(orgs))
+    return Object.values(orgs)
   }
 
   private walkOrgForUser(orgId: string, result: Record<string, Organization>) {
-    if (result[orgId]) return;
-    const doc = this.docs.find(d => d.id === orgId);
+    if (result[orgId]) return
+    const doc = this.docs.find(d => d.id === orgId)
     if (!doc) {
-      console.log('Cant find document for org ', orgId);
-      return;
+      console.log('Cant find document for org ', orgId)
+      return
     }
 
     result[doc.id] = {
@@ -82,7 +82,7 @@ export class OrganizationService {
       rosterTitle: doc.rosterName,
       canCreateEvents: doc.canCreateEvents,
       canCreateMissions: doc.canCreateMissions,
-    };
+    }
     // TODO: recursive/transitive partnerships. ex: ESAR -> KCSARA -> KCSO, SMR -> KCSARA -> KCSO
     for (const partner of doc.partners) {
       result[partner.id] = {
@@ -91,7 +91,7 @@ export class OrganizationService {
         rosterTitle: partner.rosterName,
         canCreateEvents: partner.canCreateEvents,
         canCreateMissions: partner.canCreateMissions,
-      };
+      }
     }
   }
 }

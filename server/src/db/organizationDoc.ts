@@ -1,4 +1,4 @@
-export const ORGS_COLLECTION = 'organizations';
+export const ORGS_COLLECTION = 'organizations'
 
 export interface OrganizationPartner {
   id: string;
