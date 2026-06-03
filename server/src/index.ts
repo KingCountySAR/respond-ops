@@ -8,10 +8,14 @@ import { readFileSync } from 'fs'
 import { Context, Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { resolve } from 'path'
+import { WebSocketServer } from 'ws'
 
 import { connectDb } from './db/mongo.js'
 import { domainFromRequest } from './lib/request.js'
 import { getUserFromSession } from './lib/session.js'
+import { setupEnvironmentApi } from './routes/api/environmentApi.js'
+import { setupAuthRoutes } from './routes/auth.js'
+import { setupWebsockets, WebsocketManager } from './routes/websockets.js'
 import { OrganizationService } from './svc/organizationService.js'
 
 const CLIENT_DIST = resolve(process.cwd(), './static')
@@ -41,6 +45,13 @@ async function getBootDataForRequest(c: Context): Promise<BootData> {
 const app = new Hono()
 
 app.use('/api/*', cors())
+
+app.route('/api/auth', setupAuthRoutes(orgService))
+app.route('/api', setupEnvironmentApi(getBootDataForRequest))
+
+const wss = new WebSocketServer({ noServer: true })
+const socketManager = new WebsocketManager(wss)
+app.route('/ws', setupWebsockets(socketManager))
 
 app.get('/api/health', (c) => {
   const response: ApiResponse<{ status: string }> = {
@@ -77,7 +88,7 @@ app.get('*', indexHandler)
 const port = Number(process.env.PORT ?? 3000)
 
 connectDb().then(() => {
-  serve({ fetch: app.fetch, port/*, websocket: { server: wss }*/ }, () => {
+  serve({ fetch: app.fetch, port, websocket: { server: wss } }, () => {
     console.log(`Server running at http://localhost:${port}`)
   })
 })

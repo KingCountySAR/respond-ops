@@ -1,20 +1,17 @@
-import type { ApiResponse } from '@shared/api'
-import { useEffect, useState } from 'react'
+import { observer } from 'mobx-react-lite'
+import { createBrowserRouter, RouterProvider } from 'react-router'
 
-export default function App() {
-  const [status, setStatus] = useState<string>('...')
+import { useAuthContext } from './lib/authProvider'
+import { LoginPage } from './pages/LoginPage'
+import routes from './pages/Routes'
 
-  useEffect(() => {
-    fetch('/api/health')
-      .then((r) => r.json() as Promise<ApiResponse<{ status: string }>>)
-      .then((res) => setStatus(res.data?.status ?? res.error ?? 'unknown'))
-      .catch(() => setStatus('unreachable'))
-  }, [])
+const router = createBrowserRouter([
+  ...routes
+])
 
-  return (
-    <main>
-      <h1>Respond Ops</h1>
-      <p>API status: {status}</p>
-    </main>
-  )
-}
+const App = observer(() => {
+  const auth = useAuthContext()
+  return auth.loggedIn ? <RouterProvider router={router}/> : <LoginPage />
+})
+
+export default App

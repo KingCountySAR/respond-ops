@@ -10,11 +10,23 @@ export default defineConfig({
     outDir: '../server/static',
     emptyOutDir: true,
   },
-  plugins: [react()],
+  plugins: [react({
+    babel: {
+      plugins: [
+        [
+          '@babel/plugin-proposal-decorators',
+          {
+            version: '2023-05'
+          }
+        ]
+      ]
+    }
+  })],
   resolve: {
     alias: {
       '@shared': resolve(__dirname, '../shared/src'),
       '@server': resolve(__dirname, '../server/src'),
+      '@web': resolve(__dirname, 'src'),
     },
   },
   server: {
