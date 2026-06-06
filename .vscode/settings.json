@@ -1,4 +1,5 @@
 {
+  "files.eol": "\n",
   "typescript.preferences.quoteStyle": "single",
   "javascript.preferences.quoteStyle": "single",
   "typescript.format.semicolons": "remove",

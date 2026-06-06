@@ -13,9 +13,13 @@ import { WebSocketServer } from 'ws'
 import { connectDb } from './db/mongo.js'
 import { domainFromRequest } from './lib/request.js'
 import { getUserFromSession } from './lib/session.js'
+import { setupActivityRoutes } from './routes/api/activitiesApi.js'
 import { setupEnvironmentApi } from './routes/api/environmentApi.js'
+import { setupLocationRoutes } from './routes/api/locationsApi.js'
+import { setupOrganizationRoutes } from './routes/api/organizationsApi.js'
 import { setupAuthRoutes } from './routes/auth.js'
 import { setupWebsockets, WebsocketManager } from './routes/websockets.js'
+import { ActivityService } from './svc/activityService.js'
 import { OrganizationService } from './svc/organizationService.js'
 
 const CLIENT_DIST = resolve(process.cwd(), './static')
@@ -25,6 +29,7 @@ if (!GOOGLE_CLIENT_ID) {
 }
 
 const orgService = new OrganizationService()
+const activityService = new ActivityService(orgService)
 
 async function getBootDataForRequest(c: Context): Promise<BootData> {
   const domain = domainFromRequest(c)
@@ -48,6 +53,9 @@ app.use('/api/*', cors())
 
 app.route('/api/auth', setupAuthRoutes(orgService))
 app.route('/api', setupEnvironmentApi(getBootDataForRequest))
+app.route('/api', setupLocationRoutes())
+app.route('/api', setupOrganizationRoutes(orgService))
+app.route('/api', setupActivityRoutes(activityService))
 
 const wss = new WebSocketServer({ noServer: true })
 const socketManager = new WebsocketManager(wss)

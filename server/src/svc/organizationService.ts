@@ -1,6 +1,6 @@
 import { getDb } from '@server/db/index.js'
 import { isD4HProviderDoc, MEMBER_PROVIDER_COLLECTION, MemberProviderDoc } from '@server/db/memberProviderDoc.js'
-import { OrganizationDoc, ORGS_COLLECTION } from '@server/db/organizationDoc.js'
+import { OrganizationDoc, OrganizationPartner, ORGS_COLLECTION } from '@server/db/organizationDoc.js'
 import { ClientEnvironment } from '@shared/api/environment.js'
 import { Organization } from '@shared/api/organization.js'
 import { WithId } from 'mongodb'
@@ -60,7 +60,16 @@ export class OrganizationService {
     return provider
   }
 
-  async getUsersOrgView(orgId: string) {
+  async getUserOrg(orgId: string) {
+    await this.reload()
+    const doc = this.docs.find(d => d.id === orgId)
+    if (!doc) {
+      throw new Error('Cant find organization ' + orgId)
+    }
+    return this.getOrgView(doc)
+  }
+  
+  async listUsersOrgs(orgId: string) {
     await this.reload()
     const orgs: Record<string, Organization> = {}
     this.walkOrgForUser(orgId, orgs)
@@ -76,22 +85,20 @@ export class OrganizationService {
       return
     }
 
-    result[doc.id] = {
-      id: doc.id,
-      title: doc.title,
-      rosterTitle: doc.rosterName,
-      canCreateEvents: doc.canCreateEvents,
-      canCreateMissions: doc.canCreateMissions,
-    }
+    result[doc.id] = this.getOrgView(doc)
     // TODO: recursive/transitive partnerships. ex: ESAR -> KCSARA -> KCSO, SMR -> KCSARA -> KCSO
     for (const partner of doc.partners) {
-      result[partner.id] = {
-        id: partner.id,
-        title: partner.title,
-        rosterTitle: partner.rosterName,
-        canCreateEvents: partner.canCreateEvents,
-        canCreateMissions: partner.canCreateMissions,
-      }
+      result[partner.id] = this.getOrgView(partner)
+    }
+  }
+
+  private getOrgView(org: OrganizationDoc | OrganizationPartner) {
+    return {
+      id: org.id,
+      title: org.title,
+      rosterTitle: org.rosterName,
+      canCreateEvents: org.canCreateEvents,
+      canCreateMissions: org.canCreateMissions,
     }
   }
 }

@@ -1,4 +1,6 @@
 import { ThemeProvider } from '@mui/material/styles'
+import { LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { observer } from 'mobx-react-lite'
 import { PropsWithChildren, StrictMode, useEffect } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -8,8 +10,11 @@ import { AuthProvider, useAuthContext } from './lib/authProvider'
 import { loadBootData } from './lib/bootLoader'
 import { ConfigProvider, useConfigContext } from './lib/configProvider'
 import { LoginPage } from './pages/LoginPage'
+import { ActivitiesProvider, ActivitiesStore } from './store/activitiesStore'
 import { AuthStore } from './store/authStore'
 import { ConfigStore } from './store/configStore'
+import { LocationsProvider, LocationsStore } from './store/locationsStore'
+import { OrganizationsProvider, OrganizationsStore } from './store/organizationStore'
 import WebsocketStore, { SocketProvider } from './store/websocketStore'
 
 
@@ -49,6 +54,10 @@ async function boot() {
     const socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss://' : 'ws://'}${window.location.host}/ws`)
     return socket
   })
+  const organizationsStore = new OrganizationsStore()
+  organizationsStore.load()
+  const locationsStore = new LocationsStore()
+  const activitiesStore = new ActivitiesStore('memberId', organizationsStore, socketStore)
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -58,7 +67,15 @@ async function boot() {
             <AppLoginGuard>
               <SocketAdapter socketStore={socketStore}>
                 <SocketProvider store={socketStore}>
-                  <App />
+                  <OrganizationsProvider store={organizationsStore}>
+                    <LocationsProvider store={locationsStore}>
+                      <ActivitiesProvider store={activitiesStore}>
+                        <LocalizationProvider dateAdapter={AdapterDateFns}>
+                          <App />
+                        </LocalizationProvider>
+                      </ActivitiesProvider>
+                    </LocationsProvider>
+                  </OrganizationsProvider>
                 </SocketProvider>
               </SocketAdapter>
             </AppLoginGuard>
