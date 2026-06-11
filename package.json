@@ -9,6 +9,7 @@
   "scripts": {
     "start": "npm run start -w server",
     "dev": "concurrently -n server,web -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w web\"",
+    "test": "npm run test -w server",
     "build": "npm run build -w web && npm run build -w server",
     "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces --if-present",

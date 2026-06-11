@@ -30,7 +30,7 @@ if (!GOOGLE_CLIENT_ID) {
 }
 
 const orgService = new OrganizationService()
-const activityService = new ActivityService(orgService)
+const activityService = new ActivityService(orgService, getDb)
 
 async function getBootDataForRequest(c: Context): Promise<BootData> {
   const domain = domainFromRequest(c)

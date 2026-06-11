@@ -1,8 +1,8 @@
-import { ACTIVITIES_COLLECTION, ActivityDoc, getDb } from '@server/db/index.js'
+import { ACTIVITIES_COLLECTION, ActivityDoc } from '@server/db/index.js'
 import { SessionLogin } from '@server/model/auth.js'
 import { Activity } from '@shared/api/activity.js'
 import { subDays } from 'date-fns'
-import { WithId } from 'mongodb'
+import { Db, WithId } from 'mongodb'
 
 import { OrganizationService } from './organizationService.js'
 
@@ -14,13 +14,14 @@ export class ActivityService {
   private active: WithId<ActivityDoc>[] = []
 
   constructor(
-    private readonly orgService: OrganizationService
+    private readonly orgService: OrganizationService,
+    private readonly getDb: () => Db,
   ) {
   }
 
   async reload(force?: boolean) {
     if (this.active.length === 0 || force) {
-      this.active = await getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION).find({
+      this.active = await this.getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION).find({
         removeTime: undefined,
         $or: [
           { endTime: undefined },
@@ -36,7 +37,7 @@ export class ActivityService {
   }
 
   async getAllActivitiesForOrgs(orgIds: string[], type: 'missions'|'events') {
-    const docs = await getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION)
+    const docs = await this.getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION)
       .find({ isMission: type === 'missions', removeTime: undefined, $or: orgIds.map(id => ({ [`organizations.${id}`]: { $exists: true } })) })
       .toArray()
     return docs
@@ -46,7 +47,7 @@ export class ActivityService {
     await this.reload()
     let activity: WithId<ActivityDoc>|null|undefined = this.active.find(f => f.id === id)
     if (!activity) {
-      activity = await getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION).findOne({ id, removeTime: undefined })
+      activity = await this.getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION).findOne({ id, removeTime: undefined })
     }
     return activity ? activity : undefined
   }
@@ -70,7 +71,7 @@ export class ActivityService {
       id: activity.id ?? crypto.randomUUID()
     }
 
-    await getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION).replaceOne(
+    await this.getDb().collection<ActivityDoc>(ACTIVITIES_COLLECTION).replaceOne(
       { id: doc.id },
       doc,
       { upsert: true }

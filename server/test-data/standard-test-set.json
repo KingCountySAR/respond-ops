@@ -1,0 +1,166 @@
+{
+  "organizations": [
+    {
+      "title": "Cascade Rescue Team",
+      "rosterName": "CRT",
+      "brand": {
+        "primary": "#154515",
+        "primaryDark": "#31A031"
+      },
+      "domain": "respond.crt.local",
+      "memberProvider": "cascade-d4h",
+      "id": "1",
+      "canCreateEvents": true,
+      "canCreateMissions": false,
+      "partners": [
+        {
+          "id": "2",
+          "title": "Cascade County Sheriff's Office",
+          "rosterName": "CCSO",
+          "canCreateMissions": true,
+          "canCreateEvents": false
+        },
+        {
+          "id": "3",
+          "title": "Friends of SAR",
+          "canCreateEvents": true,
+          "canCreateMissions": false
+        }
+      ],
+      "loginProviders": [
+        {
+          "type": "membership"
+        },
+        {
+          "type": "whitelist",
+          "list": [
+            "base@crt.local"
+          ]
+        }
+      ],
+      "tags": [
+        {
+          "groupId": "CRT TL",
+          "label": "TL"
+        },
+        {
+          "groupId": "EMT (Sponsored)",
+          "label": "EMT"
+        },
+        {
+          "groupId": "CRT Basic Snow",
+          "label": "Snow"
+        },
+        {
+          "groupId": "CRT FL",
+          "label": "FL"
+        },
+        {
+          "groupId": "CRT OL",
+          "label": "OL"
+        },
+        {
+          "groupId": "CRT Rigger",
+          "label": "Rigger"
+        },
+        {
+          "groupId": "CRT Rigging Leaders",
+          "label": "RigLead"
+        }
+      ]
+    },
+    {
+      "title": "Cascade County Sheriff's Office",
+      "rosterName": "CCSO",
+      "domain": "respond.cascadecounty.gov",
+      "id": "2"
+    },
+    {
+      "id": "3",
+      "title": "Friends of SAR"
+    },
+    {
+      "id": "4",
+      "title":"Cascade K9s",
+      "rosterName": "CK9",
+      "domain": "respond.cascadek9.org",
+      "memberProvider": "cascade-d4h",
+      "canCreateEvents": true,
+      "canCreateMissions": false,
+      "partners": [
+        {
+          "id": "2",
+          "title": "Cascade County Sheriff's Office",
+          "rosterName": "CCSO",
+          "canCreateMissions": true,
+          "canCreateEvents": false
+        },
+        {
+          "id": "3",
+          "title": "Friends of SAR",
+          "canCreateEvents": true,
+          "canCreateMissions": false
+        }
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "_id": {
+        "$oid": "64926232cfc702538e520010"
+      },
+      "id": "e71e7e7f-1133-4bed-9811-bd8872473da8",
+      "idNumber": "26-9999",
+      "title": "Mt. Si Injured",
+      "location": {
+        "title": "Mt. Si TH"
+      },
+      "mapId": "6M97J",
+      "startTime": 1780354800000,
+      "isMission": true,
+      "asMission": true,
+      "ownerOrgId": "2",
+      "participants": {
+        "12345": {
+          "id": "12345",
+          "firstname": "Joe",
+          "lastname": "Searcher",
+          "organizationId": "1",
+          "miles": 20,
+          "timeline": [
+            {
+              "time": 1780354800000,
+              "status": 4,
+              "organizationId": "1"
+            }
+          ]
+        }
+      },
+      "organizations": {
+        "1": {
+          "timeline": [
+            {
+              "status": 4,
+              "time": 1780425568364
+            }
+          ],
+          "id": "1",
+          "title": "Cascade Rescue Team",
+          "rosterName": "CRT"
+        },
+        "2": {
+          "timeline": [
+            {
+              "status": 0,
+              "time": 1780425598364
+            }
+          ],
+          "id": "2",
+          "title": "Cascade County Sheriff's Office",
+          "rosterName": "CCSO"
+        }
+      },
+      "endTime": 1780363620000
+    }
+  ]
+}
