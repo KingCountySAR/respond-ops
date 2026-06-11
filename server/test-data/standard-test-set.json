@@ -1,4 +1,13 @@
 {
+  "member-providers": [
+    {
+      "name": "cascade-d4h",
+      "provider": "D4HMembers",
+      "teamId": "1234",
+      "token": "{Secret}",
+      "moreEmailsField": "Secondary Email"
+    }
+  ],
   "organizations": [
     {
       "title": "Cascade Rescue Team",
