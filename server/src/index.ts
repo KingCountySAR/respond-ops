@@ -10,6 +10,7 @@ import { cors } from 'hono/cors'
 import { resolve } from 'path'
 import { WebSocketServer } from 'ws'
 
+import { getDb, SESSIONS_COLLECTION } from './db/index.js'
 import { connectDb } from './db/mongo.js'
 import { domainFromRequest } from './lib/request.js'
 import { getUserFromSession } from './lib/session.js'
@@ -95,7 +96,18 @@ app.get('*', indexHandler)
 
 const port = Number(process.env.PORT ?? 3000)
 
+async function purgeExpiredSessions() {
+  const result = await getDb().collection(SESSIONS_COLLECTION)
+    .deleteMany({ expires: { $lt: new Date().toISOString() } })
+  if (result.deletedCount > 0) {
+    console.log(`Purged ${result.deletedCount} expired session(s)`)
+  }
+}
+
 connectDb().then(() => {
+  purgeExpiredSessions()
+  setInterval(purgeExpiredSessions, 60 * 60 * 1000)
+
   serve({ fetch: app.fetch, port, websocket: { server: wss } }, () => {
     console.log(`Server running at http://localhost:${port}`)
   })
