@@ -8,7 +8,7 @@ export const ActivityListPage = observer(() => {
 
   useEffect(() => {
     activities.load()
-  })
+  }, [activities])
 
   return (
     <ToolbarPage>
