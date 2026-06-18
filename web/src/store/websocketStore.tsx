@@ -1,9 +1,11 @@
 import { action, computed, makeObservable, observable, runInAction } from 'mobx'
 import { createContext, useContext } from 'react'
 
+const RECONNECT_TICK = 500
 const BACKOFF_BASE_MS = 500
 const BACKOFF_MAX_MS = 30000
 const BACKOFF_MULTIPLIER = 2
+const CONNECT_TIMEOUT_MS = 5000
 
 interface SocketMessageHandler {
   onMessage: (msg: { type: string }) => void;
@@ -11,11 +13,13 @@ interface SocketMessageHandler {
 
 export interface SocketContext {
   readonly isConnected: boolean
+  readonly connectState: ConnectState
+  readonly reconnectCountdownText?: string
   on(types: string[], handler: SocketMessageHandler): void
   off(handler: SocketMessageHandler): void
 }
 
-interface SocketLike {
+export interface SocketLike {
   addEventListener(name: 'open'|'message'|'close', listener: (event: unknown) => void): void
   addEventListener(name: 'message', listener: (event: MessageEvent<string>) => void): void
   send(data: string | ArrayBufferLike | Blob | ArrayBufferView<ArrayBufferLike>): void
@@ -34,6 +38,8 @@ export default class WebsocketStore {
 
   @observable accessor connectState: ConnectState = 'idle'
   @observable accessor connectAttempt: number = 0
+  @observable private accessor delay: number = 0
+  @observable accessor millisUntilConnect: number|undefined = undefined
   private reconnectTimer?: TimeoutType
 
   private handlers: Array<{ handler: SocketMessageHandler, types: string[] }> = []
@@ -48,6 +54,13 @@ export default class WebsocketStore {
   @computed
   get isConnected() {
     return this.connectState === 'connected'
+  }
+
+  @computed
+  get reconnectCountdownText() {
+    // Reduce flicker in the UI by not showing short countdowns
+    if (this.delay < 2000) return undefined
+    return this.millisUntilConnect ? Math.ceil(this.millisUntilConnect / 1000) + 's' : undefined
   }
 
   on(types: string[], handler: SocketMessageHandler) {
@@ -88,7 +101,12 @@ export default class WebsocketStore {
   private reconnect() {
     this.connectState = 'connecting'
     this.socket = this.socketFactory()
+    // Firefox (at least) will add a backoff timeout when making multiple attempts to reconnect
+    // to the socket (on top of our backoffs). Limit the length of these browser-implemented timeouts
+    const connectTimer = setTimeout(() => this.socket?.close?.(), CONNECT_TIMEOUT_MS)
+
     this.socket.addEventListener('open', () => {
+      clearTimeout(connectTimer)
       runInAction(() => {
         this.connectState = 'connected'
         this.connectAttempt = 0
@@ -98,7 +116,8 @@ export default class WebsocketStore {
     })
     this.socket.addEventListener('message', (evt) => this.processMessage(evt.data))
     this.socket.addEventListener('close', () => {
-      runInAction(() => this.connectState = 'connecting')
+      clearTimeout(connectTimer)
+      runInAction(() => this.connectState = 'idle')
       if (this.shouldConnect) {
         this.scheduleReconnect()
       }
@@ -107,7 +126,7 @@ export default class WebsocketStore {
 
   @action.bound
   private scheduleReconnect() {
-    const delay = Math.min(
+    this.delay = Math.min(
       BACKOFF_BASE_MS * BACKOFF_MULTIPLIER ** this.connectAttempt,
       BACKOFF_MAX_MS
     )
@@ -115,12 +134,19 @@ export default class WebsocketStore {
     if (this.reconnectTimer) {
       clearTimeout(this.reconnectTimer)
     }
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = undefined
-      if (this.shouldConnect) {
-        this.reconnect()
+    this.millisUntilConnect = this.delay
+    this.reconnectTimer = setInterval(() => {
+      runInAction(() => this.millisUntilConnect = this.millisUntilConnect ? this.millisUntilConnect - RECONNECT_TICK : undefined)
+      if (!this.millisUntilConnect) {
+        if (this.reconnectTimer) {
+          clearInterval(this.reconnectTimer)
+        }
+        this.reconnectTimer = undefined
+        if (this.shouldConnect) {
+          this.reconnect()
+        }
       }
-    }, delay)
+    }, RECONNECT_TICK)
   }
 
   stop() {
@@ -131,7 +157,7 @@ export default class WebsocketStore {
       this.startTimeout = undefined
     }
     if (this.reconnectTimer) {
-      clearTimeout(this.reconnectTimer)
+      clearInterval(this.reconnectTimer)
       this.reconnectTimer = undefined
     }
   }
