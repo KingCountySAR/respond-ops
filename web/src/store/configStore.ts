@@ -33,6 +33,9 @@ export class ConfigStore {
     return createTheme({
       palette: {
         mode,
+        background: {
+          default: '#eee',
+        },
         primary: base.palette.augmentColor({
           color: { main: primary },
           name: 'primary',

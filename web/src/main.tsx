@@ -1,3 +1,4 @@
+import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material/styles'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
@@ -17,12 +18,12 @@ import { LocationsProvider, LocationsStore } from './store/locationsStore'
 import { OrganizationsProvider, OrganizationsStore } from './store/organizationStore'
 import WebsocketStore, { SocketProvider } from './store/websocketStore'
 
-
 const ObservableThemeProvider = observer(({ children }: PropsWithChildren<unknown>) => {
   const config = useConfigContext()
 
   return (
     <ThemeProvider theme={config.theme}>
+      <CssBaseline />
       {children}
     </ThemeProvider>
   )
@@ -34,7 +35,7 @@ const AppLoginGuard = observer(({ children }: PropsWithChildren<unknown>) => {
     return <LoginPage />
   }
 
-  return auth.loggedIn ? children : (<LoginPage />)
+  return children
 })
 
 const SocketAdapter = ({ socketStore, children }: PropsWithChildren<{ socketStore: WebsocketStore }>) => {
@@ -55,9 +56,11 @@ async function boot() {
     return socket
   })
   const organizationsStore = new OrganizationsStore()
-  organizationsStore.load()
+  if (authStore.loggedIn) {
+    await organizationsStore.load()
+  }
   const locationsStore = new LocationsStore()
-  const activitiesStore = new ActivitiesStore('memberId', organizationsStore, socketStore)
+  const activitiesStore = new ActivitiesStore(authStore.user?.memberId, organizationsStore, socketStore)
 
   createRoot(document.getElementById('root')!).render(
     <StrictMode>

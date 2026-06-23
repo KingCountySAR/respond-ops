@@ -1,6 +1,6 @@
 import AddLocation from '@mui/icons-material/AddLocation'
 import Edit from '@mui/icons-material/Edit'
-import { Box, Button, FormControl, FormControlLabel, FormGroup, FormHelperText, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Stack, Switch, TextField } from '@mui/material'
+import { Box, Button, FormControl, FormControlLabel, FormGroup, FormHelperText, Grid, IconButton, InputLabel, MenuItem, Paper, Select, Stack, Switch, TextField, type SxProps, type Theme } from '@mui/material'
 import { DateTimePicker } from '@mui/x-date-pickers'
 import { LocationAutocomplete } from '@web/components/locations/LocationAutocomplete.js'
 import { ToolbarPage } from '@web/components/ToolbarPage'
@@ -12,6 +12,15 @@ import MobxReactForm from 'mobx-react-form'
 import { observer } from 'mobx-react-lite'
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router'
+
+const styles = {
+  formGrid: { alignItems: 'center', padding: 2 },
+  locationRow: { alignItems: 'center' },
+  locationAction: { paddingRight: 2 },
+  optionsGrid: { mt: 1 },
+  helperGrid: { my: 1 },
+  actionRow: { justifyContent: 'flex-end' },
+} satisfies Record<string, SxProps<Theme>>
 
 class CreateActivityUiStore {
   earlySignInWindowOptions: { value: number; label: string }[] = [
@@ -132,7 +141,7 @@ const _CreateActivityPage = observer(({ store }: { store: CreateActivityUiStore 
     <ToolbarPage>
       <Paper>
         <form>
-          <Grid container spacing={2} sx={{alignItems: 'center', padding: 2}}>
+          <Grid container spacing={2} sx={styles.formGrid}>
             <Grid size={12}>
               <FormControl fullWidth error={!!form.$('title').error}>
                 <TextField {...form.$('title').bind()} variant="outlined" required />
@@ -141,12 +150,12 @@ const _CreateActivityPage = observer(({ store }: { store: CreateActivityUiStore 
             </Grid>
 
             <Grid size={12}>
-              <Stack direction="row" spacing={2} sx={{alignItems: 'center'}}>
+              <Stack direction="row" spacing={2} sx={styles.locationRow}>
                 <FormControl fullWidth error={!!form.$('location').error}>
                   <LocationAutocomplete value={form.$('location').value} onChange={form.$('location').onChange} variant="outlined" required />
                   <FormHelperText>{form.$('location').error}</FormHelperText>
                 </FormControl>
-                <Box sx={{paddingRight: 2}}>
+                <Box sx={styles.locationAction}>
                   <IconButton color="default" onClick={() => alert('TODO') /*setShowLocationEditDialog(true)*/}>
                     {form.$('location').value ? <Edit /> : <AddLocation />}
                   </IconButton>
@@ -221,7 +230,7 @@ const _CreateActivityPage = observer(({ store }: { store: CreateActivityUiStore 
               </FormControl>
             </Grid>
 
-            <Grid container size={12} spacing={1} sx={{ mt: 1 }}>
+            <Grid container size={12} spacing={1} sx={styles.optionsGrid}>
               <Grid size={{ xs: 12, sm: 6 }}>
 
                 <Grid size={12}>
@@ -231,14 +240,14 @@ const _CreateActivityPage = observer(({ store }: { store: CreateActivityUiStore 
                 </Grid>
 
                 {isNew && (
-                  <Grid size={12} sx={{ my: 1 }}>
+                  <Grid size={12} sx={styles.helperGrid}>
                     <Box>{'DEMO'} will start as a participating unit.</Box>
                   </Grid>
                 )}
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Stack direction="row" sx={{justifyContent: 'flex-end'}} spacing={1}>
+                <Stack direction="row" sx={styles.actionRow} spacing={1}>
                   <Button onClick={() => navigate(-1)}>Cancel</Button>
                   <Button onClick={form.onSubmit} variant="contained">
                     Save {store.type === 'missions' ? 'Mission' : 'Event'}
