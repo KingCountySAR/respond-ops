@@ -14,8 +14,7 @@ export class OrganizationsStore {
 
   @action.bound
   async load(force?: boolean) {
-    console.log('orgs loading')
-    if (this.loaded && !force) {
+    if ((this.loaded || this.loading) && !force) {
       return
     }
 
@@ -25,11 +24,11 @@ export class OrganizationsStore {
       const json = await response.json() as OrganizationsResult
       runInAction(() => {
         this.knownOrgs = json.data!.map(o => new OrganizationModel(o))
+        this.loaded = true
       })
     } finally {
       runInAction(() => {
         this.loading = false
-        this.loaded = true
       })
     }
   }

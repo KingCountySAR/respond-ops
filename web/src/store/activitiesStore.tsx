@@ -14,7 +14,9 @@ function sortActivities(a: Activity, b: Activity) {
 }
 
 export class ActivitiesStore {
-  @observable accessor activeActivities: ActivityModel[] = [];
+  @observable accessor activeActivities: ActivityModel[] = []
+  @observable accessor loaded: boolean = false
+  @observable accessor loading: boolean = false
 
   constructor(
     private readonly memberId: string | undefined,
@@ -62,12 +64,24 @@ export class ActivitiesStore {
     return this.activeActivities.filter(f => !f.isMission).sort(sortActivities)
   }
 
-  async load() {
-    await this.orgStore.load()
-    const response = await fetch('/api/activity/active')
-    const json = await response.json()
-    const list = (json.result as ActivityWithMeta[]).map(a => new ActivityModel(a))
-    runInAction(() => this.activeActivities = list)
+  async load(force?: boolean) {
+    if ((this.loaded || this.loading) && !force) {
+      return
+    }
+
+    runInAction(() => this.loading = true)
+    try {
+      await this.orgStore.load()
+      const response = await fetch('/api/activity/active')
+      const json = await response.json()
+      const list = (json.result as ActivityWithMeta[]).map(a => new ActivityModel(a))
+      runInAction(() => {
+        this.activeActivities = list
+        this.loaded = true
+      })
+    } finally {
+      runInAction(() => this.loading = false)
+    }
   }
 
   async getActivity(activityId: string): Promise<ActivityModel | undefined> {

@@ -1,10 +1,9 @@
 import CloudIcon from '@mui/icons-material/Cloud'
 import NoCloudIcon from '@mui/icons-material/CloudOff'
 import ConnectingIcon from '@mui/icons-material/CloudSync'
-import { Breakpoint, Container, Stack, styled } from '@mui/material'
+import { Breakpoint, Container, Stack, styled, type SxProps, type Theme } from '@mui/material'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
-import CssBaseline from '@mui/material/CssBaseline'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { AppMenu } from '@web/components/AppMenu'
@@ -19,6 +18,22 @@ import { Link } from 'react-router'
 
 const Main = styled('main')({})
 
+const styles = {
+  onlineStatus: { alignItems: 'center' },
+  pageContainer: { display: 'flex', flexDirection: 'column', flex: '1 1 auto' },
+  appBar: { zIndex: (theme: Theme) => theme.zIndex.drawer + 1 },
+  toolbar: { display: 'flex', alignItems: 'center' },
+  title: { flexGrow: 1 },
+  headerActions: {
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  toolbarFiller: { height: { xs: 56, sm: 64 } },
+  main: { py: 2, flex: '1 1 auto', display: 'flex', flexDirection: 'column' },
+} satisfies Record<string, SxProps<Theme>>
+
+const titleLinkStyle: React.CSSProperties = { textDecoration: 'inherit', color: 'inherit' }
+
 const ConnectIconLookup = {
   idle: NoCloudIcon,
   connecting: ConnectingIcon,
@@ -30,7 +45,7 @@ const OnlineStatus = observer(() => {
   const Icon = ConnectIconLookup[sockets.connectState]
 
   return (
-    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+    <Stack direction="row" spacing={1} sx={styles.onlineStatus}>
       <Typography variant="caption">{sockets.reconnectCountdownText}</Typography>
       <Icon fontSize="medium" />
     </Stack>
@@ -46,12 +61,11 @@ export const ToolbarPage = observer(({ children, maxWidth }: { children: React.R
   }
 
   return (
-    <Container maxWidth={maxWidth ?? 'md'} sx={{ display: 'flex', flexDirection: 'column', flex: '1 1 auto' }}>
-      <CssBaseline />
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            <Link to="/" style={{ textDecoration: 'inherit', color: 'inherit' }}>
+    <Container maxWidth={maxWidth ?? 'md'} sx={styles.pageContainer}>
+      <AppBar position="fixed" sx={styles.appBar}>
+        <Toolbar sx={styles.toolbar}>
+          <Typography variant="h6" noWrap component="div" sx={styles.title}>
+            <Link to="/" style={titleLinkStyle}>
               {config.env.shortTitle} Check-In
             </Link>
           </Typography>
@@ -59,10 +73,7 @@ export const ToolbarPage = observer(({ children, maxWidth }: { children: React.R
             <Stack
               direction="row"
               spacing={2}
-              sx={{
-                justifyContent: 'flex-end',
-                alignItems: 'center',
-              }}
+              sx={styles.headerActions}
             >
               <OnlineStatus />
             </Stack>
@@ -70,8 +81,8 @@ export const ToolbarPage = observer(({ children, maxWidth }: { children: React.R
           <AppMenu />
         </Toolbar>
       </AppBar>
-      <Box className="toolbar-filler" sx={{ height: { xs: 56, sm: 64 } }} />
-      <Main sx={{ py: 2, flex: '1 1 auto', display: 'flex', flexDirection: 'column' }}>
+      <Box className="toolbar-filler" sx={styles.toolbarFiller} />
+      <Main sx={styles.main}>
         {children}
       </Main>
     </Container>

@@ -1,4 +1,4 @@
-import { Alert, Paper } from '@mui/material'
+import { Alert, Paper, type SxProps, type Theme } from '@mui/material'
 import { ToolbarPage } from '@web/components/ToolbarPage'
 import { observer } from 'mobx-react-lite'
 import { useEffect, useMemo } from 'react'
@@ -11,6 +11,10 @@ class ActivityUiStore {
   async load() {}
 }
 
+const styles = {
+  paper: { p: 2 },
+} satisfies Record<string, SxProps<Theme>>
+
 const _ActivityPage = observer(({ store }: { store: ActivityUiStore }) => {
   useEffect(() => {
     store.load()
@@ -18,7 +22,7 @@ const _ActivityPage = observer(({ store }: { store: ActivityUiStore }) => {
 
   return (
     <ToolbarPage>
-      <Paper sx={{ p: 2 }}>
+      <Paper sx={styles.paper}>
 
       </Paper>
     </ToolbarPage>
